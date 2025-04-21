@@ -22,7 +22,6 @@ jobs:
           bun-version-file: ".bun-version"
       - name: generate UI
         env:
-          # auto set by GitHub, details in
           # https://docs.github.com/en/actions/security-guides/automatic-token-authentication
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
@@ -31,4 +30,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: bun run main.ts
+        run: bun main.ts
