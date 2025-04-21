@@ -45,6 +45,7 @@ export async function generateCode(
 		{
 			delay: 100,
 			retries: 3,
+      timeout: 30 * 60_000,
 		},
 	);
 }
