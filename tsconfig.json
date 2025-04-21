@@ -25,10 +25,5 @@
 		"noUnusedParameters": false,
 		"noPropertyAccessFromIndexSignature": false,
     "baseUrl": ".",
-    "paths": {
-      "unist-util-visit-parents/do-not-use-color": [
-        "./node_modules/unist-util-visit-parents/lib/color.js"
-      ]
-    }
 	}
 }

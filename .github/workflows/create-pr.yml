@@ -20,7 +20,9 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: ".bun-version"
-      - name: generate UI
+      - name: Install dependencies
+        run: bun install
+      - name: Generate UI
         env:
           # https://docs.github.com/en/actions/security-guides/automatic-token-authentication
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -30,4 +32,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: bun main.ts
+        run: bun run main.ts
