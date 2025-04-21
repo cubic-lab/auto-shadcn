@@ -1,0 +1,34 @@
+name: Create PR
+
+on:
+  issues:
+    types: [edited, labeled, unlabeled]
+  issue_comment:
+    types: [created, edited, deleted]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+
+jobs:
+  handle_issue:
+    runs-on: ubuntu-latest
+    name: Create PR
+    if: ${{ !contains(github.event.comment.body, '[vx.dev]') && !contains(github.event.comment.body, '[AutoDev]') && github.event.comment.user.type != 'bot'}}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.2.10
+      - name: generate UI
+        env:
+          # auto set by GitHub, details in
+          # https://docs.github.com/en/actions/security-guides/automatic-token-authentication
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          WHITELIST: ${{ secrets.WHITELIST }}
+          CONFIG: ${{ vars.CONFIG }}
+          ACTOR: ${{ github.actor }}
+        run: deno run -A main.ts
