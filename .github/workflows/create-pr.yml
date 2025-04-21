@@ -16,10 +16,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          deno-version: 2.2.10
+          bun-version-file: ".bun-version"
       - name: generate UI
         env:
           # auto set by GitHub, details in
@@ -31,4 +31,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: deno run -A main.ts
+        run: bun run main.ts

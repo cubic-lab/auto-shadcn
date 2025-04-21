@@ -1,3 +1,3 @@
 export default function Preview() {
-  return <p>AutoDev</p>;
+	return <p>AutoDev</p>;
 }

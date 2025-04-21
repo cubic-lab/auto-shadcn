@@ -1,7 +1,7 @@
-import { assert } from "@std/assert";
-import { IssueEvent } from "./types.ts";
-import { Octokit } from 'npm:octokit';
-import OctokitCommitPlugin from 'npm:octokit-commit-multiple-files'
+import type { IssueEvent } from './types';
+import { Octokit } from 'octokit';
+import OctokitCommitPlugin from 'octokit-commit-multiple-files';
+import { assert } from './assets';
 
 const PatchedOctokit = Octokit.plugin(OctokitCommitPlugin);
 
@@ -13,30 +13,30 @@ type CreateCommitOptions = {
   base?: string;
   committer?: string;
   author?: string;
-  changes: {message: string; files: Record<string, string>}[];
+  changes: { message: string; files: Record<string, string> }[];
   batchSize?: number;
   forkFromBaseBranch?: string;
-}
+};
 
 class Github {
   private octokit: Octokit;
 
   constructor() {
-    const ghToken = Deno.env.get("GH_TOKEN");
-    assert(ghToken, "failed to get github token");
+    const ghToken = process.env.GH_TOKEN;
+    assert(ghToken, 'failed to get github token');
 
     this.octokit = new PatchedOctokit({
       auth: ghToken,
-    })
+    });
   }
 
   getOwnerAndRepo() {
-    const owner = Deno.env.get("GITHUB_REPOSITORY_OWNER");
-    assert(owner, "failed to get repo owner");
+    const owner = process.env.GITHUB_REPOSITORY_OWNER;
+    assert(owner, 'failed to get repo owner');
 
-    let repo = Deno.env.get("GITHUB_REPOSITORY");
-    assert(repo, "failed to get repo name");
-    repo = repo.replace(`${owner}/`, "");
+    let repo = process.env.GITHUB_REPOSITORY;
+    assert(repo, 'failed to get repo name');
+    repo = repo.replace(`${owner}/`, '');
 
     return {
       owner,
@@ -45,11 +45,12 @@ class Github {
   }
 
   async getConnectedIssue(owner: string, repo: string, prBody: string) {
-    const issueNumber = parseInt(
-      prBody.match(/\[AutoDev\] This PR implements & closes #(\d+),/)?.[1] || ""
+    const issueNumber = Number.parseInt(
+      prBody.match(/\[AutoDev\] This PR implements & closes #(\d+),/)?.[1] ||
+      '',
     );
     if (!issueNumber) {
-      throw new Error("failed to get connected issue");
+      throw new Error('failed to get connected issue');
     }
 
     return (
@@ -62,22 +63,22 @@ class Github {
   }
 
   async getIssueEvent() {
-    const githubEventPath = Deno.env.get("GITHUB_EVENT_PATH");
-    assert(githubEventPath, "failed to get github event path");
+    const githubEventPath = process.env.GITHUB_EVENT_PATH;
+    assert(githubEventPath, 'failed to get github event path');
 
     let issueEvent: IssueEvent = (
       await import(githubEventPath, {
-        with: { type: "json" },
+        with: { type: 'json' },
       })
     ).default;
 
-    const eventName = Deno.env.get("GITHUB_EVENT_NAME");
-    assert(eventName, "failed to get event name");
+    const eventName = process.env.GITHUB_EVENT_NAME;
+    assert(eventName, 'failed to get event name');
 
-    const actor = Deno.env.get("ACTOR");
-    assert(actor, "failed to get actor");
+    const actor = process.env.ACTOR;
+    assert(actor, 'failed to get actor');
 
-    if (eventName === "pull_request_review_comment") {
+    if (eventName === 'pull_request_review_comment') {
       const { action, comment, pull_request } = issueEvent as unknown as {
         action: string;
         comment: { body: string };
@@ -94,8 +95,8 @@ class Github {
         issue: (await this.getConnectedIssue(
           owner,
           repo,
-          pull_request.body
-        )) as IssueEvent["issue"],
+          pull_request.body,
+        )) as IssueEvent['issue'],
       };
     }
 
@@ -110,13 +111,14 @@ class Github {
     };
   }
 
-  listRepoWorkflows({ owner, repo }: {owner: string; repo: string}) {
+  listRepoWorkflows({ owner, repo }: { owner: string; repo: string }) {
     return this.octokit.rest.actions.listRepoWorkflows({
       owner,
       repo,
     });
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   iterator(action: any, options: any) {
     return this.octokit.paginate.iterator(action, options);
   }
@@ -184,16 +186,16 @@ class Github {
 
     let { nodes = [] } = connectedEvent.repository.issue?.timelineItems || {};
     nodes = nodes
-      .filter((n) => n.source.state === "OPEN")
+      .filter((n) => n.source.state === 'OPEN')
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
     return nodes[0]?.source.number;
   }
 
   createOrUpdateFiles(options: CreateCommitOptions): Promise<void> {
-    // deno-lint-ignore no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     return (this.octokit as any).createOrUpdateFiles(options);
   }
 
@@ -201,7 +203,7 @@ class Github {
     owner: string,
     repo: string,
     branch: string,
-    path: string
+    path: string,
   ) {
     const res = await this.octokit.rest.repos.getContent({
       owner,
@@ -211,7 +213,7 @@ class Github {
     });
     const data = res.data;
 
-    if ("type" in data && data.type === "file") {
+    if ('type' in data && data.type === 'file') {
       return atob(data.content);
     }
   }
