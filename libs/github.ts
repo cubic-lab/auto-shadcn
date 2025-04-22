@@ -1,7 +1,7 @@
 import type { IssueEvent } from './types';
 import { Octokit } from 'octokit';
 import OctokitCommitPlugin from 'octokit-commit-multiple-files';
-import { assert } from './assets';
+import { assert } from './asserts';
 
 const PatchedOctokit = Octokit.plugin(OctokitCommitPlugin);
 
